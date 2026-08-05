@@ -83,6 +83,7 @@ const menuItems = [
 ];
 
 let cart = [];
+let originalModalHTML = '';
 
 // DOM ELEMENTS
 const menuGrid = document.getElementById('menu-grid');
@@ -108,46 +109,83 @@ const paySubmitBtn = document.getElementById('pay-submit-btn');
 
 // INITIALIZATION
 document.addEventListener('DOMContentLoaded', () => {
+    // Save initial modal template for clean resets
+    const modalContent = document.getElementById('modal-body-content');
+    if (modalContent) {
+        originalModalHTML = modalContent.innerHTML;
+    }
+
     renderMenuGrid('all');
     setupEventListeners();
 });
 
 // EVENT LISTENERS SETUP
 function setupEventListeners() {
-    cartTriggerBtn.addEventListener('click', toggleCart);
-    closeCartBtn.addEventListener('click', toggleCart);
-    cartOverlay.addEventListener('click', toggleCart);
-    checkoutBtn.addEventListener('click', openCheckout);
-    closeModalBtn.addEventListener('click', closeCheckout);
-    paymentForm.addEventListener('submit', processPayment);
-
-    // STRICT NUMERIC-ONLY VALIDATION FOR ACCOUNT/PHONE NUMBER
-    accountNumberInput.addEventListener('input', function (e) {
-        // Strip out any non-digit characters instantly
-        this.value = this.value.replace(/\D/g, '');
-    });
-
-    // CHANGE PAYMENT METHOD DYNAMICALLY
-    paymentMethodSelect.addEventListener('change', (e) => {
-        const method = e.target.value;
-        qrLabel.textContent = `Scan ${method} QR Code`;
-        paySubmitBtn.textContent = `Confirm & Pay via ${method}`;
-        qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${method}-UrbanBite-Payment`;
-    });
+    if (cartTriggerBtn) cartTriggerBtn.addEventListener('click', openCart);
+    if (closeCartBtn) closeCartBtn.addEventListener('click', closeCart);
+    if (cartOverlay) cartOverlay.addEventListener('click', closeCart);
+    if (checkoutBtn) checkoutBtn.addEventListener('click', openCheckout);
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeCheckout);
+    
+    bindFormListeners();
 
     // Category Filter Navigation
-    document.querySelector('.category-tabs').addEventListener('click', (e) => {
-        if (e.target.classList.contains('tab-btn')) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            e.target.classList.add('active');
-            renderMenuGrid(e.target.dataset.category);
-        }
-    });
+    const categoryTabs = document.querySelector('.category-tabs');
+    if (categoryTabs) {
+        categoryTabs.addEventListener('click', (e) => {
+            if (e.target.classList.contains('tab-btn')) {
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                renderMenuGrid(e.target.dataset.category);
+            }
+        });
+    }
+
+    // Cart Container Event Delegation for + / - buttons
+    if (cartItemsContainer) {
+        cartItemsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('qty-btn')) {
+                const id = parseInt(e.target.dataset.id, 10);
+                const change = parseInt(e.target.dataset.change, 10);
+                updateQty(id, change);
+            }
+        });
+    }
+}
+
+// BIND REUSABLE FORM LISTENERS
+function bindFormListeners() {
+    const activeForm = document.getElementById('payment-form');
+    const activeAccInput = document.getElementById('account-number');
+    const activePaySelect = document.getElementById('payment-method');
+
+    if (activeForm) activeForm.addEventListener('submit', processPayment);
+
+    if (activeAccInput) {
+        activeAccInput.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '');
+        });
+    }
+
+    if (activePaySelect) {
+        activePaySelect.addEventListener('change', (e) => {
+            const method = e.target.value;
+            const currentQrLabel = document.getElementById('qr-label');
+            const currentPayBtn = document.getElementById('pay-submit-btn');
+            const currentQrImg = document.getElementById('qr-code-img');
+
+            if (currentQrLabel) currentQrLabel.textContent = `Scan ${method} QR Code`;
+            if (currentPayBtn) currentPayBtn.textContent = `Confirm & Pay via ${method}`;
+            if (currentQrImg) currentQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${method}-Tindahan-ni-Janeer-Payment`;
+        });
+    }
 }
 
 // RENDER MENU GRID
 function renderMenuGrid(category) {
+    if (!menuGrid) return;
     menuGrid.innerHTML = '';
+    
     const filteredItems = category === 'all' 
         ? menuItems 
         : menuItems.filter(item => item.category === category);
@@ -157,7 +195,7 @@ function renderMenuGrid(category) {
         card.className = 'menu-card';
         card.dataset.category = item.category;
         card.innerHTML = `
-            <img src="${item.image}" alt="${item.name}">
+            <img src="${item.image}" alt="${item.name}" loading="lazy">
             <div class="card-body">
                 <h3 class="card-title">${item.name}</h3>
                 <p class="card-desc">${item.desc}</p>
@@ -171,12 +209,18 @@ function renderMenuGrid(category) {
     });
 }
 
-// CART MANAGEMENT
-function toggleCart() {
-    cartDrawer.classList.toggle('open');
-    cartOverlay.style.display = cartDrawer.classList.contains('open') ? 'block' : 'none';
+// CART DRAWER CONTROLS
+function openCart() {
+    if (cartDrawer) cartDrawer.classList.add('open');
+    if (cartOverlay) cartOverlay.classList.add('show');
 }
 
+function closeCart() {
+    if (cartDrawer) cartDrawer.classList.remove('open');
+    if (cartOverlay) cartOverlay.classList.remove('show');
+}
+
+// CART MANAGEMENT
 function addToCart(id) {
     const item = menuItems.find(i => i.id === id);
     const existingItem = cart.find(i => i.id === id);
@@ -187,6 +231,7 @@ function addToCart(id) {
         cart.push({ ...item, qty: 1 });
     }
     renderCart();
+    openCart();
 }
 
 function updateQty(id, change) {
@@ -202,19 +247,19 @@ function updateQty(id, change) {
 
 function renderCart() {
     const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
-    cartCount.textContent = totalItems;
+    if (cartCount) cartCount.textContent = totalItems;
 
     if (cart.length === 0) {
-        cartItemsContainer.innerHTML = `<p class="empty-cart-msg">Your order bag is currently empty.</p>`;
-        subtotalEl.textContent = `${currencySymbol}0.00`;
-        grandTotalEl.textContent = `${currencySymbol}0.00`;
-        checkoutBtn.disabled = true;
+        if (cartItemsContainer) cartItemsContainer.innerHTML = `<p class="empty-cart-msg">Your order bag is currently empty.</p>`;
+        if (subtotalEl) subtotalEl.textContent = `${currencySymbol}0.00`;
+        if (grandTotalEl) grandTotalEl.textContent = `${currencySymbol}0.00`;
+        if (checkoutBtn) checkoutBtn.disabled = true;
         return;
     }
 
-    checkoutBtn.disabled = false;
+    if (checkoutBtn) checkoutBtn.disabled = false;
     let subtotal = 0;
-    cartItemsContainer.innerHTML = '';
+    if (cartItemsContainer) cartItemsContainer.innerHTML = '';
 
     cart.forEach(item => {
         const itemTotal = item.price * item.qty;
@@ -227,63 +272,81 @@ function renderCart() {
                 <h4>${item.name}</h4>
                 <p>${currencySymbol}${item.price.toFixed(2)} each</p>
                 <div class="qty-controls">
-                    <button class="qty-btn" onclick="updateQty(${item.id}, -1)">-</button>
+                    <button class="qty-btn" data-id="${item.id}" data-change="-1">-</button>
                     <span style="font-size:0.9rem; font-weight:600;">${item.qty}</span>
-                    <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
+                    <button class="qty-btn" data-id="${item.id}" data-change="1">+</button>
                 </div>
             </div>
-            <span style="font-weight:700; color:var(--primary);">${currencySymbol}${itemTotal.toFixed(2)}</span>
+            <span style="font-weight:700; color:var(--primary, #e63946);">${currencySymbol}${itemTotal.toFixed(2)}</span>
         `;
-        cartItemsContainer.appendChild(itemRow);
+        if (cartItemsContainer) cartItemsContainer.appendChild(itemRow);
     });
 
     const grandTotal = subtotal + deliveryFee;
-    subtotalEl.textContent = `${currencySymbol}${subtotal.toFixed(2)}`;
-    grandTotalEl.textContent = `${currencySymbol}${grandTotal.toFixed(2)}`;
-    modalTotalAmount.textContent = `${currencySymbol}${grandTotal.toFixed(2)}`;
+    if (subtotalEl) subtotalEl.textContent = `${currencySymbol}${subtotal.toFixed(2)}`;
+    if (grandTotalEl) grandTotalEl.textContent = `${currencySymbol}${grandTotal.toFixed(2)}`;
+    
+    const modalTotal = document.getElementById('modal-total-amount');
+    if (modalTotal) modalTotal.textContent = `${currencySymbol}${grandTotal.toFixed(2)}`;
 }
 
 // CHECKOUT & PAYMENT PROCESSING
 function openCheckout() {
-    toggleCart();
-    checkoutModal.style.display = 'flex';
+    closeCart();
+    if (checkoutModal) checkoutModal.classList.add('show');
 }
 
 function closeCheckout() {
-    checkoutModal.style.display = 'none';
+    if (checkoutModal) checkoutModal.classList.remove('show');
+}
+
+function resetModal() {
+    const modalBody = document.getElementById('modal-body-content');
+    if (modalBody && originalModalHTML) {
+        modalBody.innerHTML = originalModalHTML;
+        bindFormListeners();
+    }
+    closeCheckout();
 }
 
 function processPayment(event) {
     event.preventDefault();
 
-    const paymentMethod = paymentMethodSelect.value;
-    const name = document.getElementById('customer-name').value;
-    const phone = accountNumberInput.value;
-    const address = document.getElementById('delivery-address').value;
-    const refNo = 'UB' + Math.floor(100000000 + Math.random() * 900000000);
+    const paymentSelect = document.getElementById('payment-method');
+    const customerNameInput = document.getElementById('customer-name');
+    const accNumberInput = document.getElementById('account-number');
+    const deliveryAddressInput = document.getElementById('delivery-address');
+
+    const paymentMethod = paymentSelect ? paymentSelect.value : 'GCash';
+    const name = customerNameInput ? customerNameInput.value : '';
+    const phone = accNumberInput ? accNumberInput.value : '';
+    const address = deliveryAddressInput ? deliveryAddressInput.value : '';
+    const refNo = 'TNJ' + Math.floor(100000000 + Math.random() * 900000000);
     
     const subtotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
     const total = subtotal + deliveryFee;
 
     const modalBody = document.getElementById('modal-body-content');
-    modalBody.innerHTML = `
-        <div class="receipt">
-            <div class="success-icon">✓</div>
-            <h3 style="margin-bottom:0.4rem;">Order Confirmed!</h3>
-            <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:1rem;">Your ${paymentMethod} transaction was successful.</p>
-            
-            <div class="receipt-details">
-                <p><strong>Order Ref No:</strong> ${refNo}</p>
-                <p><strong>Payment Method:</strong> ${paymentMethod}</p>
-                <p><strong>Customer:</strong> ${name}</p>
-                <p><strong>Mobile/Account:</strong> ${phone}</p>
-                <p><strong>Deliver To:</strong> ${address}</p>
-                <p><strong>Total Paid:</strong> ${currencySymbol}${total.toFixed(2)}</p>
-            </div>
+    if (modalBody) {
+        modalBody.innerHTML = `
+            <div class="receipt">
+                <div class="success-icon" style="font-size:2.5rem; color:#2ec4b6; text-align:center;">✓</div>
+                <h3 style="margin-bottom:0.4rem; text-align:center;">Order Confirmed!</h3>
+                <p style="font-size:0.88rem; color:var(--text-muted, #6c757d); margin-bottom:1rem; text-align:center;">Your ${paymentMethod} transaction was successful.</p>
+                
+                <div class="receipt-details" style="background:#f8f9fa; padding:1rem; border-radius:8px; margin-bottom:1rem; font-size:0.9rem; line-height:1.6;">
+                    <p><strong>Order Ref No:</strong> ${refNo}</p>
+                    <p><strong>Payment Method:</strong> ${paymentMethod}</p>
+                    <p><strong>Customer:</strong> ${name}</p>
+                    <p><strong>Mobile/Account:</strong> ${phone}</p>
+                    <p><strong>Deliver To:</strong> ${address}</p>
+                    <p><strong>Total Paid:</strong> ${currencySymbol}${total.toFixed(2)}</p>
+                </div>
 
-            <button onclick="location.reload()" class="pay-submit-btn">Return to Menu</button>
-        </div>
-    `;
+                <button onclick="resetModal()" class="pay-submit-btn" style="width:100%;">Return to Menu</button>
+            </div>
+        `;
+    }
     cart = [];
     renderCart();
 }
