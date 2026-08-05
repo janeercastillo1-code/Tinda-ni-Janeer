@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUSTO KO burger,pizza,drinks </title>
+    <title>Tindahan ni Janeer | Burgers, Pizzas & Drinks</title>
     <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
@@ -14,10 +16,10 @@
     <!-- NAVBAR -->
     <header>
         <div class="navbar">
-            <a href="#" class="brand">
+            <a href="#" class="brand" aria-label="Tindahan ni Janeer Homepage">
                 <span>🍔 TINDAHAN NI JANEER</span>
             </a>
-            <button class="cart-trigger" id="cart-trigger-btn">
+            <button class="cart-trigger" id="cart-trigger-btn" aria-label="Open order bag">
                 🛒 Order Bag <span class="cart-badge" id="cart-count">0</span>
             </button>
         </div>
@@ -32,25 +34,25 @@
     <!-- MAIN CONTAINER -->
     <main class="container">
         <!-- CATEGORIES -->
-        <div class="category-tabs">
+        <nav class="category-tabs" aria-label="Menu categories">
             <button class="tab-btn active" data-category="all">All Items</button>
             <button class="tab-btn" data-category="burgers">Burgers</button>
             <button class="tab-btn" data-category="pizzas">Pizzas</button>
             <button class="tab-btn" data-category="drinks">Drinks</button>
-        </div>
+        </nav>
 
         <!-- MENU GRID -->
-        <div class="grid" id="menu-grid">
+        <section class="grid" id="menu-grid" aria-live="polite">
             <!-- Dynamically populated by JS -->
-        </div>
+        </section>
     </main>
 
     <!-- CART SLIDE-OVER DRAWER -->
-    <div class="cart-overlay" id="cart-overlay"></div>
-    <div class="cart-drawer" id="cart-drawer">
+    <div class="cart-overlay" id="cart-overlay" aria-hidden="true"></div>
+    <aside class="cart-drawer" id="cart-drawer" aria-hidden="true" aria-label="Shopping Cart">
         <div class="cart-header">
             <h3>Your Order</h3>
-            <button class="close-cart" id="close-cart-btn">&times;</button>
+            <button class="close-cart" id="close-cart-btn" aria-label="Close order bag">&times;</button>
         </div>
         <div class="cart-items" id="cart-items">
             <p class="empty-cart-msg">Your order bag is currently empty.</p>
@@ -72,14 +74,14 @@
                 Proceed to Checkout
             </button>
         </div>
-    </div>
+    </aside>
 
     <!-- CHECKOUT MODAL -->
-    <div class="modal" id="checkout-modal">
+    <div class="modal" id="checkout-modal" aria-hidden="true" role="dialog" aria-labelledby="modal-title">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Payment Checkout</h3>
-                <button class="close-modal" id="close-modal-btn">&times;</button>
+                <h3 id="modal-title">Payment Checkout</h3>
+                <button class="close-modal" id="close-modal-btn" aria-label="Close modal">&times;</button>
             </div>
             <div class="modal-body" id="modal-body-content">
                 <form id="payment-form">
@@ -99,30 +101,41 @@
                     <div class="qr-container">
                         <p class="qr-label" id="qr-label">Scan GCash QR Code</p>
                         <img id="qr-code-img" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=GCash-UrbanBite-Payment" alt="Payment QR Code">
-                        <p class="merchant-label" id="merchant-label">Merchant: Urban Bite Philippines</p>
+                        <p class="merchant-label" id="merchant-label">Merchant: Tindahan ni Janeer</p>
                     </div>
                     
                     <div class="form-group">
                         <label for="customer-name">Full Name</label>
-                        <input type="text" id="customer-name" placeholder="e.g. Juan Dela Cruz" required>
+                        <input 
+                            type="text" 
+                            id="customer-name" 
+                            placeholder="e.g. Juan Dela Cruz" 
+                            autocomplete="name"
+                            required>
                     </div>
 
                     <div class="form-group">
                         <label for="account-number" id="phone-label">Mobile / Account Number (Digits Only)</label>
                         <input 
-                            type="text" 
+                            type="tel" 
                             id="account-number" 
                             placeholder="09171234567" 
                             maxlength="11" 
                             inputmode="numeric" 
                             pattern="[0-9]{11}" 
                             title="Please enter exactly 11 digits" 
+                            autocomplete="tel"
                             required>
                     </div>
 
                     <div class="form-group">
                         <label for="delivery-address">Delivery Address</label>
-                        <input type="text" id="delivery-address" placeholder="Unit, Street, Barangay, City" required>
+                        <input 
+                            type="text" 
+                            id="delivery-address" 
+                            placeholder="Unit, Street, Barangay, City" 
+                            autocomplete="street-address"
+                            required>
                     </div>
 
                     <div class="amount-due-box">
