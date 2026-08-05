@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GUSTO KO burger,pizza,drinks </title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <header>
+        <div class="navbar">
+            <a href="#" class="brand">
+                <span>🍔 TINDAHAN NI JANEER</span>
+            </a>
+            <button class="cart-trigger" id="cart-trigger-btn">
+                🛒 Order Bag <span class="cart-badge" id="cart-count">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <h1>Crafted Fresh. Served Hot.</h1>
+        <p>Smash burgers, stone-baked pizzas, and refreshing ice-cold drinks delivered fast.</p>
+    </section>
+
+    <!-- MAIN CONTAINER -->
+    <main class="container">
+        <!-- CATEGORIES -->
+        <div class="category-tabs">
+            <button class="tab-btn active" data-category="all">All Items</button>
+            <button class="tab-btn" data-category="burgers">Burgers</button>
+            <button class="tab-btn" data-category="pizzas">Pizzas</button>
+            <button class="tab-btn" data-category="drinks">Drinks</button>
+        </div>
+
+        <!-- MENU GRID -->
+        <div class="grid" id="menu-grid">
+            <!-- Dynamically populated by JS -->
+        </div>
+    </main>
+
+    <!-- CART SLIDE-OVER DRAWER -->
+    <div class="cart-overlay" id="cart-overlay"></div>
+    <div class="cart-drawer" id="cart-drawer">
+        <div class="cart-header">
+            <h3>Your Order</h3>
+            <button class="close-cart" id="close-cart-btn">&times;</button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <p class="empty-cart-msg">Your order bag is currently empty.</p>
+        </div>
+        <div class="cart-footer">
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span id="subtotal">₱0.00</span>
+            </div>
+            <div class="summary-row">
+                <span>Delivery Fee</span>
+                <span id="delivery-fee">₱50.00</span>
+            </div>
+            <div class="summary-row total">
+                <span>Total</span>
+                <span id="grand-total">₱0.00</span>
+            </div>
+            <button class="checkout-btn" id="checkout-btn" disabled>
+                Proceed to Checkout
+            </button>
+        </div>
+    </div>
+
+    <!-- CHECKOUT MODAL -->
+    <div class="modal" id="checkout-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Payment Checkout</h3>
+                <button class="close-modal" id="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body-content">
+                <form id="payment-form">
+                    
+                    <!-- PAYMENT METHOD SELECTOR -->
+                    <div class="form-group">
+                        <label for="payment-method">Select Payment Method</label>
+                        <select id="payment-method" required>
+                            <option value="GCash">GCash</option>
+                            <option value="Maya">Maya</option>
+                            <option value="MariBank">MariBank (SeaBank)</option>
+                            <option value="BDO">BDO Unibank</option>
+                            <option value="BPI">BPI (Bank of the Philippine Islands)</option>
+                        </select>
+                    </div>
+
+                    <div class="qr-container">
+                        <p class="qr-label" id="qr-label">Scan GCash QR Code</p>
+                        <img id="qr-code-img" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=GCash-UrbanBite-Payment" alt="Payment QR Code">
+                        <p class="merchant-label" id="merchant-label">Merchant: Urban Bite Philippines</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="customer-name">Full Name</label>
+                        <input type="text" id="customer-name" placeholder="e.g. Juan Dela Cruz" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="account-number" id="phone-label">Mobile / Account Number (Digits Only)</label>
+                        <input 
+                            type="text" 
+                            id="account-number" 
+                            placeholder="09171234567" 
+                            maxlength="11" 
+                            inputmode="numeric" 
+                            pattern="[0-9]{11}" 
+                            title="Please enter exactly 11 digits" 
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="delivery-address">Delivery Address</label>
+                        <input type="text" id="delivery-address" placeholder="Unit, Street, Barangay, City" required>
+                    </div>
+
+                    <div class="amount-due-box">
+                        <p>Total Payable: <span id="modal-total-amount">₱0.00</span></p>
+                    </div>
+
+                    <button type="submit" class="pay-submit-btn" id="pay-submit-btn">Confirm & Pay via GCash</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="script.js"></script>
+</body>
+</html>
