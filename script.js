@@ -98,18 +98,9 @@ const grandTotalEl = document.getElementById('grand-total');
 const checkoutBtn = document.getElementById('checkout-btn');
 const checkoutModal = document.getElementById('checkout-modal');
 const closeModalBtn = document.getElementById('close-modal-btn');
-const paymentForm = document.getElementById('payment-form');
-const modalTotalAmount = document.getElementById('modal-total-amount');
-
-const accountNumberInput = document.getElementById('account-number');
-const paymentMethodSelect = document.getElementById('payment-method');
-const qrLabel = document.getElementById('qr-label');
-const qrCodeImg = document.getElementById('qr-code-img');
-const paySubmitBtn = document.getElementById('pay-submit-btn');
 
 // INITIALIZATION
 document.addEventListener('DOMContentLoaded', () => {
-    // Save initial modal template for clean resets
     const modalContent = document.getElementById('modal-body-content');
     if (modalContent) {
         originalModalHTML = modalContent.innerHTML;
@@ -159,7 +150,11 @@ function bindFormListeners() {
     const activeAccInput = document.getElementById('account-number');
     const activePaySelect = document.getElementById('payment-method');
 
-    if (activeForm) activeForm.addEventListener('submit', processPayment);
+    if (activeForm) {
+        // Remove existing listener before adding to avoid duplicate triggers
+        activeForm.removeEventListener('submit', processPayment);
+        activeForm.addEventListener('submit', processPayment);
+    }
 
     if (activeAccInput) {
         activeAccInput.addEventListener('input', function () {
@@ -292,6 +287,7 @@ function renderCart() {
 
 // CHECKOUT & PAYMENT PROCESSING
 function openCheckout() {
+    if (cart.length === 0) return;
     closeCart();
     if (checkoutModal) checkoutModal.classList.add('show');
 }
@@ -318,9 +314,9 @@ function processPayment(event) {
     const deliveryAddressInput = document.getElementById('delivery-address');
 
     const paymentMethod = paymentSelect ? paymentSelect.value : 'GCash';
-    const name = customerNameInput ? customerNameInput.value : '';
-    const phone = accNumberInput ? accNumberInput.value : '';
-    const address = deliveryAddressInput ? deliveryAddressInput.value : '';
+    const name = customerNameInput ? customerNameInput.value : 'N/A';
+    const phone = accNumberInput ? accNumberInput.value : 'N/A';
+    const address = deliveryAddressInput ? deliveryAddressInput.value : 'N/A';
     const refNo = 'TNJ' + Math.floor(100000000 + Math.random() * 900000000);
     
     const subtotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
@@ -334,7 +330,7 @@ function processPayment(event) {
                 <h3 style="margin-bottom:0.4rem; text-align:center;">Order Confirmed!</h3>
                 <p style="font-size:0.88rem; color:var(--text-muted, #6c757d); margin-bottom:1rem; text-align:center;">Your ${paymentMethod} transaction was successful.</p>
                 
-                <div class="receipt-details" style="background:#f8f9fa; padding:1rem; border-radius:8px; margin-bottom:1rem; font-size:0.9rem; line-height:1.6;">
+                <div class="receipt-details" style="background:#f8f9fa; padding:1rem; border-radius:8px; margin-bottom:1rem; font-size:0.9rem; line-height:1.6; color:#000;">
                     <p><strong>Order Ref No:</strong> ${refNo}</p>
                     <p><strong>Payment Method:</strong> ${paymentMethod}</p>
                     <p><strong>Customer:</strong> ${name}</p>
@@ -347,6 +343,8 @@ function processPayment(event) {
             </div>
         `;
     }
+    
+    // Clear cart after successful checkout
     cart = [];
     renderCart();
 }
